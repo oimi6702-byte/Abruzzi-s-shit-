@@ -7,17 +7,20 @@
   <style>
     *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',system-ui,sans-serif;}
     body{background:linear-gradient(145deg,#0f172a,#1e293b);padding:16px 8px 40px;min-height:100vh;display:flex;justify-content:center;align-items:flex-start;}
-    .container{max-width:900px;width:100%;background:rgba(255,255,255,0.95);border-radius:36px;padding:24px 18px 30px;box-shadow:0 30px 50px rgba(0,0,0,0.5);}
+    .container{max-width:900px;width:100%;background:rgba(255,255,255,0.95);border-radius:36px;padding:24px 18px 30px;box-shadow:0 30px 50px rgba(0,0,0,0.5);backdrop-filter:blur(15px);}
     h1{font-size:1.8rem;color:#0f172a;margin-bottom:6px;display:flex;align-items:center;gap:10px;font-weight:800;flex-wrap:wrap;}
     .badge{background:#b91c1c;color:white;font-size:0.8rem;padding:5px 14px;border-radius:50px;font-weight:700;box-shadow:0 4px 10px rgba(185,28,28,0.4);}
     .timer-card{background:#0f172a;padding:14px 20px;border-radius:60px;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;color:#fff;box-shadow:0 6px 15px rgba(0,0,0,0.3);}
     #timerDisplay{font-size:2.6rem;font-weight:800;color:#facc15;letter-spacing:3px;}
+    .progress-wrapper{width:100%;height:12px;background:#e2e8f0;border-radius:20px;overflow:hidden;margin-bottom:20px;}
+    #progressBar{width:0%;height:100%;background:linear-gradient(90deg,#2563eb,#06b6d4);transition:width 0.3s ease;}
     .tabs{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;position:sticky;top:10px;background:rgba(255,255,255,0.9);padding:10px 0;z-index:25;border-radius:30px;}
-    .tab{background:#e2e8f0;border:none;padding:12px 8px;border-radius:40px;font-weight:700;color:#1e293b;flex:1;cursor:pointer;font-size:0.8rem;transition:all 0.25s;}
+    .tab{background:#e2e8f0;border:none;padding:12px 8px;border-radius:40px;font-weight:700;color:#1e293b;flex:1;cursor:pointer;font-size:0.8rem;transition:0.25s;}
     .tab.active{background:#2563eb;color:#fff;box-shadow:0 8px 18px rgba(37,99,235,0.4);}
     .subject-panel{display:none;}
     .subject-panel.active{display:block;}
-    .q-card{background:#fff;border-radius:24px;padding:20px 18px;margin-bottom:18px;border:1px solid #e2e8f0;box-shadow:0 8px 20px rgba(0,0,0,0.04);}
+    .q-card{background:#fff;border-radius:24px;padding:20px 18px;margin-bottom:18px;border:1px solid #e2e8f0;box-shadow:0 8px 20px rgba(0,0,0,0.04);transition:transform 0.3s ease;}
+    .q-card:hover{transform:translateY(-4px);}
     .q-header{display:flex;gap:14px;margin-bottom:18px;align-items:flex-start;}
     .q-num{background:#1e293b;color:#fff;min-width:46px;height:46px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.3rem;}
     .q-text{font-size:1.05rem;font-weight:600;color:#0f172a;line-height:1.45;padding-top:4px;}
@@ -29,8 +32,9 @@
     .nav-btn{background:#1e293b;color:#fff;border:none;padding:14px 20px;border-radius:40px;font-weight:700;cursor:pointer;flex:1;transition:0.2s;font-size:0.95rem;}
     .nav-btn:disabled{background:#94a3b8;opacity:0.5;cursor:not-allowed;}
     .q-indicator{font-weight:700;color:#1e293b;background:#eef2ff;padding:10px 20px;border-radius:40px;font-size:0.95rem;}
-    .btn{background:#2563eb;color:#fff;border:none;padding:18px;font-size:1.3rem;font-weight:700;border-radius:60px;width:100%;margin:18px 0 8px;cursor:pointer;box-shadow:0 8px 18px rgba(37,99,235,0.3);}
-    .btn:hover{background:#1d4ed8;}
+    .btn{background:linear-gradient(135deg,#2563eb,#06b6d4);color:#fff;border:none;padding:18px;font-size:1.3rem;font-weight:700;border-radius:60px;width:100%;margin:18px 0 8px;cursor:pointer;transition:transform 0.2s, box-shadow 0.2s;box-shadow:0 8px 18px rgba(37,99,235,0.3);}
+    .btn:hover{transform:translateY(-2px);}
+    .btn:disabled{opacity:0.6;transform:none;cursor:not-allowed;}
     .result-panel{background:#fef9c3;border-radius:20px;padding:18px;border-left:6px solid #eab308;margin-top:18px;display:none;font-weight:600;color:#1e293b;animation:fadeIn 0.4s;}
     @keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
     .note{background:#e0f2fe;padding:14px 18px;border-radius:18px;margin-bottom:18px;color:#0c4a6e;font-weight:500;border-left:5px solid #2563eb;font-size:0.9rem;}
@@ -38,6 +42,463 @@
     .calc-btn:hover{background:#334155;}
     .modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;z-index:999;}
     .modal-card{background:#fff;max-width:380px;width:90%;padding:28px 24px;border-radius:36px;box-shadow:0 30px 50px rgba(0,0,0,0.4);animation:modalPop 0.3s ease;}
+    @keyframes modalPop{from{transform:scale(0.9);opacity:0;}to{transform:scale(1);opacity:1;}}
+    .modal-card h2{margin-bottom:18px;color:#0f172a;font-size:1.4rem;font-weight:700;}
+    .modal-input{width:100%;padding:16px 18px;margin-bottom:16px;border:2px solid #e2e8f0;border-radius:40px;font-size:1rem;outline:none;transition:0.2s;}
+    .modal-input:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,0.1);}
+    .modal-btn{background:#2563eb;color:white;border:none;padding:16px;width:100%;border-radius:60px;font-weight:700;font-size:1.1rem;cursor:pointer;transition:0.2s;}
+    .modal-btn:hover{background:#1d4ed8;}
+    .small-note{font-size:0.75rem;color:#64748b;margin-top:12px;text-align:center;}
+    .calc-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:1000;}
+    .calc-box{background:#1e293b;padding:20px;border-radius:28px;width:290px;box-shadow:0 20px 40px rgba(0,0,0,0.6);}
+    .calc-box input{width:100%;padding:16px;font-size:1.6rem;text-align:right;border:none;border-radius:18px;margin-bottom:16px;background:#0f172a;color:#fff;font-weight:600;}
+    .calc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+    .calc-grid button{padding:16px;font-size:1.3rem;border-radius:18px;border:none;background:#334155;color:white;cursor:pointer;transition:0.15s;}
+    .calc-grid button:hover{background:#475569;}
+    .calc-grid button.clear{background:#b91c1c;}
+    .calc-grid button.clear:hover{background:#dc2626;}
+    footer{text-align:center;color:#94a3b8;margin-top:12px;font-size:0.75rem;}
+    .error-box{background:#fee2e2;border-left:5px solid #dc2626;padding:12px;margin:10px 0;border-radius:12px;color:#991b1b;font-size:0.9rem;display:none;}
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+</head>
+<body>
+<div class="container">
+  <h1>📚 JUPEB CBT <span class="badge">150 QUESTIONS · 2 HOURS</span></h1>
+  <div class="note"><strong>⏱️ 2 HOURS · 50 LITERATURE · 50 GOVERNMENT · 50 ECONOMICS</strong><br>📧 Score sent to oimi6702@gmail.com · Calculator available</div>
+  <div id="errorDisplay" class="error-box"></div>
+  <div class="timer-card">
+    <span>⏳</span><span id="timerDisplay">120:00</span>
+    <span>Time Left <button class="calc-btn" id="openCalcBtn">🧮 Calc</button></span>
+  </div>
+  <div class="progress-wrapper"><div id="progressBar"></div></div>
+
+  <div class="tabs" id="subjectTabs">
+    <button class="tab active" data-subject="literature">📖 Literature (50)</button>
+    <button class="tab" data-subject="government">🏛️ Government (50)</button>
+    <button class="tab" data-subject="economics">💰 Economics (50)</button>
+  </div>
+
+  <div id="subjectPanels">
+    <div class="subject-panel active" id="panel-literature"></div>
+    <div class="subject-panel" id="panel-government"></div>
+    <div class="subject-panel" id="panel-economics"></div>
+  </div>
+
+  <button class="btn" id="submitBtn">✅ SUBMIT EXAM</button>
+  <div id="resultDisplay" class="result-panel"></div>
+  <footer>All questions extracted from JUPEB past papers</footer>
+</div>
+
+<!-- USER MODAL -->
+<div class="modal-overlay" id="userModal">
+  <div class="modal-card">
+    <h2>📝 CANDIDATE DETAILS</h2>
+    <input type="text" id="userNameInput" class="modal-input" placeholder="Full Name" autocomplete="name">
+    <input type="email" id="userEmailInput" class="modal-input" placeholder="Email Address" autocomplete="email">
+    <button class="modal-btn" id="startExamBtn">BEGIN EXAM</button>
+    <div class="small-note">Submit and be eligible for a reward!</div>
+  </div>
+</div>
+
+<!-- CALCULATOR MODAL -->
+<div class="calc-overlay" id="calcModal">
+  <div class="calc-box">
+    <input type="text" id="calcDisplay" value="0" readonly>
+    <div class="calc-grid">
+      <button>7</button><button>8</button><button>9</button><button>/</button>
+      <button>4</button><button>5</button><button>6</button><button>*</button>
+      <button>1</button><button>2</button><button>3</button><button>-</button>
+      <button>0</button><button>.</button><button>=</button><button>+</button>
+      <button class="clear" style="grid-column:span 2;">C</button>
+      <button style="grid-column:span 2;" id="closeCalcBtn">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function(){
+    "use strict";
+
+    function showError(msg) {
+      const errDiv = document.getElementById('errorDisplay');
+      if(errDiv) {
+        errDiv.style.display = 'block';
+        errDiv.innerHTML = '⚠️ ' + msg;
+      }
+      console.error(msg);
+    }
+
+    try { emailjs.init("mt3HJUIfu1kcIMjGb"); } catch(e) { showError("EmailJS init failed: "+e.message); }
+
+    // ----- TIMER (improved) -----
+    let totalSeconds = 7200;
+    let examSubmitted = false;
+    const timerDisplay = document.getElementById('timerDisplay');
+    const STORAGE_KEY = 'jupeb_lge_timer_2026';
+    function saveTimer(){ localStorage.setItem(STORAGE_KEY, totalSeconds.toString()); }
+    function loadTimer(){ const saved = localStorage.getItem(STORAGE_KEY); if(saved) totalSeconds = parseInt(saved) || 7200; }
+    loadTimer();
+    function formatTime(s){ let m=Math.floor(s/60); let sec=s%60; return `${m.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`; }
+    timerDisplay.textContent = formatTime(totalSeconds);
+    const timerInterval = setInterval(()=>{
+      if(examSubmitted) { clearInterval(timerInterval); return; }
+      if(totalSeconds > 0){
+        totalSeconds--;
+        timerDisplay.textContent = formatTime(totalSeconds);
+        saveTimer();
+      } else {
+        clearInterval(timerInterval);
+        alert('⏰ TIME UP! Submitting exam...');
+        examSubmitted = true;
+        document.getElementById('submitBtn').click();
+      }
+    }, 1000);
+
+    // ----- Anti-cheat (5 warnings) -----
+    let warnings=0;
+    document.addEventListener('visibilitychange',()=>{
+      if(document.hidden){
+        warnings++;
+        if(warnings>=5){ alert('❌ EXAM TERMINATED'); window.location='about:blank'; }
+        else alert(`⚠️ Warning ${warnings}/5. Do not leave the exam page.`);
+      }
+    });
+
+    // ----- User data -----
+    let userName='', userEmail='';
+    const modal=document.getElementById('userModal');
+    const nameInp=document.getElementById('userNameInput');
+    const emailInp=document.getElementById('userEmailInput');
+    const startBtn = document.getElementById('startExamBtn');
+
+    // ----- QUESTION BANKS (unchanged, 50 each) -----
+    const banks = {
+      literature: [
+        {text:"Pick the ODD item out in the list: Euripides, Aeschylus, Henrik Ibsen, Aristophanes.",options:["Euripides","Aeschylus","Henrik Ibsen","Aristophanes"],correct:2},
+        {text:"The plays written by ______ relied heavily on the use of deus ex machina.",options:["Wole Soyinka","Euripides","Ola Rotimi","Sophocles"],correct:1},
+        {text:"The play Lysistrata is a",options:["satire","tragedy","melodrama","farce"],correct:0},
+        {text:"Sophocles' best known plays are",options:["Oedipus Rex and The Flies","Antigone and Oedipus at Colonus","Oedipus Rex and Electra","Antigone and Electra"],correct:1},
+        {text:"Greek drama originated from",options:["festivals","initiations","weddings","dithyrambs"],correct:3},
+        {text:"Which of these plays does not have an eponymous title?",options:["Hedda Gabler","Macbeth","Fences","Lysistrata"],correct:2},
+        {text:"The generation of incompatible interest between a character and an opposing character is known as",options:["conflict","dramatic irony","dialogue","climax"],correct:0},
+        {text:"The major feature of drama is",options:["action and character","dialogue and action","character and dialogue","action and epilogue"],correct:1},
+        {text:"Drama is different from poetry because a play",options:["uses elevated language","involves tragic elements","exists mainly in actions","uses many characters"],correct:2},
+        {text:"A dramatic form whose outcome is funny and its actions hard to believe is called",options:["poetic drama","comedy","farce","melodrama"],correct:2},
+        {text:"A tragic flaw in a play refers to the",options:["slip made by a character which results in his fall","element of plot whose prominence makes an artistic work faulty","typographical error which recurs in a work of drama","unsuccessful play written by an otherwise remarkable dramatist"],correct:0},
+        {text:"A literary technique which recalls an earlier scene or incident is called",options:["foreshadowing","look‑back","foreknowledge","flashback"],correct:3},
+        {text:"Who gave the world its first treaty on drama?",options:["Sophocles","Aeschylus","Aristotle","Plato"],correct:2},
+        {text:"The first part of every play is known as a/an",options:["resolution","conflict","exposition","climax"],correct:2},
+        {text:"Which one of these is NOT a major theme in Achebe's A Man of the People?",options:["The struggle for power","The influence of greed","The prevailing aura of corruption","The excesses of the colonial masters"],correct:3},
+        {text:"Chief Nanga in A Man of the People is used by the novelist as",options:["the supreme example of power in developing nations","the example of a man's rise from obscurity to national fame","the greed of the educated elites","the death of conscience in post independence Africa"],correct:2},
+        {text:"Achebe's A Man of the People was written in",options:["first person narrative","second person narrative","third person narrative","omniscient narrative"],correct:0},
+        {text:"One of the most popular ways to develop characters and move a plot forward is through",options:["dialogue","metaphor","exposition","narrative"],correct:0},
+        {text:"A novella ranges between",options:["10,000–60,000 words","30,000–70,000 words","100,000–200,000 words","1,000–5,000 words"],correct:0},
+        {text:"The novel is believed to have first been written in the",options:["16th century","18th century","17th century","19th century"],correct:1},
+        {text:"What is the end of the central conflict?",options:["Falling action","Resolution","Climax","Rising action"],correct:1},
+        {text:"The English novel has no",options:["good dialogue","good characterization","clear plot","rigid framework"],correct:3},
+        {text:"The author often referred to as the father of the English novel is",options:["Daniel Defoe","Henry Fielding","William Blake","Walter crane"],correct:1},
+        {text:"What is the major thematic preoccupation in Adichie's Half of a Yellow Sun?",options:["War","Love","Betrayal","Injustice"],correct:0},
+        {text:"Complete: 'It is a truth universally acknowledged that a single man in possession of a good fortune, must be in want of a ______.'",options:["house","title","wife","dog"],correct:2},
+        {text:"The Bennet family in Pride and Prejudice live in",options:["Pemberley","Longbourn","Rosings","London"],correct:1},
+        {text:"Mr. Bingley at the Meryton ball seems taken with",options:["Elizabeth","Jane","Lydia","Charlotte Lucas"],correct:1},
+        {text:"Poetry is the language of",options:["mind","heart","love","emotions"],correct:3},
+        {text:"Obscurity of language is mostly associated with",options:["prose","poetry","haiku","drama"],correct:1},
+        {text:"The masked voice in poetry is called",options:["speaker","poet","persona","protagonist"],correct:2},
+        {text:"A lyric poem celebrating simple idyllic pleasures of country life is called",options:["sonnet","panegyric","myth","pastoral"],correct:3},
+        {text:"A poem whose speaker addresses one or more silent listeners is called",options:["apostrophe","meditation","dramatic monologue","narrative"],correct:2},
+        {text:"A poem featuring expansive settings, supernatural characters and heroic feats is called",options:["ovid","ode","ballad","epic"],correct:3},
+        {text:"Paradise Lost by John Milton is an example of",options:["religious poem","legend","myth","epic"],correct:3},
+        {text:"A poem rooted in oral tradition and meant to be sung is called",options:["epic","lyric","ballad","blank verse"],correct:2},
+        {text:"Epic poems are traditionally divided into",options:["lines","stanzas","books","epochs"],correct:2},
+        {text:"A long lyric poem written in praise of a natural object is called",options:["praise poem","ballad","epic","ode"],correct:3},
+        {text:"Language that evokes physical sensation through the five senses is called",options:["tone","symbol","imagery","emotion"],correct:2},
+        {text:"Economy of words in poetry is mostly achieved through",options:["diction","language","images","mood"],correct:0},
+        {text:"[Extract] Who is portrayed as a god in the passage?",options:["Sango","Amusa","De Pereira","the girl"],correct:0},
+        {text:"[Extract] The hero of the extract is",options:["Sango","Amusa","De Pereira","the crowd"],correct:0},
+        {text:"[Extract] '...like a cork on an angry sea' exemplifies",options:["simile","oxymoron","metaphor","personification"],correct:0},
+        {text:"[Extract] The passage uses ______ narrative viewpoint.",options:["first person","second person","third person","all‑knowing"],correct:2},
+        {text:"[Extract] The mood of the extract towards the end is that of",options:["danger","excitement","indifference","formality"],correct:0},
+        {text:"[Poem] What is the subject‑matter of this poem?",options:["Food","Wealth","Sex","Talent"],correct:1},
+        {text:"[Poem] The poem is written with",options:["end rhymes","eye rhymes","blank verse","free verse"],correct:0},
+        {text:"[Poem] The language of the poem is",options:["sarcastic","indifferent","polite","casual"],correct:0},
+        {text:"[Poem] 'hunger is a god' is an example of what literary device?",options:["Simile","Metaphor","Paradox","Apostrophe"],correct:1},
+        {text:"[Poem] What does 'man‑made life' refer to?",options:["Earth","Heaven","Labour","Sea"],correct:2},
+        {text:"[Poem] 'does decency' is an example of",options:["litotes","alliteration","personification","metaphor"],correct:1}
+      ],
+      government: [
+        {text:"A government based on the rule of law is known as",options:["Constitutional Government","Military Government","Confederal Government","Monarchial Government"],correct:0},
+        {text:"Beliefs, attitudes, and values of a society refer to",options:["Political socialization","Socialization","Political culture","Cultural socialism"],correct:2},
+        {text:"Which country adopted assimilation as a colonial policy?",options:["Germany","Britain","Portugal","France"],correct:3},
+        {text:"Appointment, ratification and dismissal of Emirs in pre‑colonial Hausa‑Fulani Empire was done by",options:["Emirs of Kano and Katsina","Emirs of Gwandu and Sokoto","Emir of Ilorin and Kwararafa","Emir of Shonga and Biu"],correct:1},
+        {text:"The first military coup d'état in Nigeria took place in",options:["1960","1968","1966","1965"],correct:2},
+        {text:"In the Oyo traditional political system, the Alaafin was selected by a group known as the",options:["Oyomesi","Ogboni","Are‑Ona‑Kakanfo","Osi"],correct:0},
+        {text:"Sovereignty is limited by",options:["The criminal code","Decrees","The legal system","International law"],correct:3},
+        {text:"Which is NOT a characteristic of democracy?",options:["Popular sovereignty","Regular elections","Majority rule","Limited franchise"],correct:3},
+        {text:"Liberalism is a philosophy associated with",options:["Socialism","Capitalism","Feudalism","Nazism"],correct:1},
+        {text:"The primary duty of citizens to the state is",options:["loyalty to traditional rulers","obedience to ministers","obedience to politicians","allegiance to the government"],correct:3},
+        {text:"Removing an elected official by the electorate after an election is termed",options:["Impeachment","Plebiscite","Recall","Referendum"],correct:2},
+        {text:"The principle of the rule of law stipulates that",options:["Only judges interpret the law","Law makers are above the law","Everyone is equal before the law","Lawyers make law"],correct:2},
+        {text:"The principle of federal character was first enshrined in the",options:["1989 constitution","1963 constitution","1999 constitution","1979 constitution"],correct:3},
+        {text:"Nigerian federalism operates a",options:["Four tier system","Three tier system","Two tier system","One tier system"],correct:1},
+        {text:"After amalgamation in 1914, the first law‑making body in Nigeria was",options:["Legislative Council","National Assembly","Regional Assembly","Nigerian Council"],correct:3},
+        {text:"The foremost authority on federalism is",options:["Walter Ofonagoro","Wheare K.C.","Harold Lasswell","David Easton"],correct:1},
+        {text:"A confederation is a political arrangement where there is",options:["strong central government","weak central government","no central government","absolute monarchy"],correct:1},
+        {text:"The number of political parties created by General Ibrahim Babangida was",options:["2","6","8","3"],correct:0},
+        {text:"Pressure groups differ from political parties because they",options:["have larger membership","do not seek political power","cannot win election","are registered by government"],correct:1},
+        {text:"Public corporations are controlled by all EXCEPT",options:["Legislators","Judges","Tax payers","Clerks"],correct:3},
+        {text:"In a federal system of government",options:["Central government has power over everything","Laws of component units equate the constitution","Constitution must be flexible","Only unwritten constitution is permissible"],correct:1},
+        {text:"The Henry Willinks Commission was set up to",options:["look into possibility of federalism","look into Nigeria's independence","look into fears of minorities","look into colonial masters' tenure"],correct:2},
+        {text:"The scholar who defines politics as 'who gets what, when and how' is",options:["David Easton","Okwudiba Nnoli","Harold Lasswell","Karl Marx"],correct:2},
+        {text:"A unitary state can be identified on the basis of",options:["Centralisation of Powers","Devolution of Powers","Allocation of Powers","Decentralisation of powers"],correct:0},
+        {text:"What gives the state legal backing and distinguishes it from other political organisations?",options:["people","Territory","Government","sovereignty"],correct:3},
+        {text:"Learning of political attitudes, values and orientations is called",options:["Political emancipation","Political socialisation","Political articulation","Political conscientization"],correct:1},
+        {text:"Getting involved in political activity is called",options:["political participation","political apathy","political culture","political alienation"],correct:0},
+        {text:"Public Administration refers to the study of",options:["Public Philosophy","Political Sociology","Public Policy","Public Relations"],correct:2},
+        {text:"Local Government authority is associated with",options:["National development","State development","Grassroots development","Inter‑state development"],correct:2},
+        {text:"Under which system does executive power reside with a single individual?",options:["presidential system","Parliamentary system","Cabinet system","Titular system"],correct:0},
+        {text:"The classical idea of direct democracy originated from",options:["Britain","Greece","United States","France"],correct:1},
+        {text:"The organs of government include all EXCEPT",options:["Executive","Legislature","Judiciary","Political parties"],correct:3},
+        {text:"______ economy is centrally planned and regulated.",options:["Capitalist","Authoritarian","Socialist","Liberalist"],correct:2},
+        {text:"A basic tenet of Marxist doctrine is",options:["Biblical materialism","Constructive materialism","Dialectical materialism","Structural materialism"],correct:2},
+        {text:"Functions of political party include all EXCEPT",options:["Mobilization of the masses","Recruitment of leaders","Socialization of leaders","Harassment of citizens"],correct:3},
+        {text:"In the legislative process, a bill is a",options:["Motion accepted for debate","Motion rejected after debate","Proposed law","Signed law"],correct:2},
+        {text:"The agency that regulates the career of civil servants is",options:["Ministerial Service Commission","Executive Service Commission","Civil Service Commission","Citizens Service Commission"],correct:2},
+        {text:"A major feature of authoritarianism is that government is",options:["Consensual","Democratized","Centralized","Decentralized"],correct:2},
+        {text:"The following are party systems EXCEPT",options:["One‑party system","Two‑party system","Multi‑party system","Multi‑virate"],correct:3},
+        {text:"Unrestrained power of the state over its citizens is underlined by",options:["Sovereignty","Nationalism","Self‑determination","Patriotism"],correct:0},
+        {text:"Checks and balances reinforces separation of powers to",options:["Make the legislature more powerful","Prevent the emergence of dictatorship","Protect the powers of the executive","Prevent an unconstitutional change of Government"],correct:1},
+        {text:"Final interpretation of federal constitution is vested in the",options:["Highest legislative body","Highest court of the land","Head of state","Council of State"],correct:1},
+        {text:"A major factor differentiating presidential from parliamentary systems is",options:["Judicial independence","Party system","Separation of powers","Passage of bills"],correct:2},
+        {text:"The supreme policy‑making organ in the OAU was",options:["The Council of Ministers","The Assembly of Heads of State and Government","The General Secretariat","The Specialized Commissions"],correct:1},
+        {text:"In which UN organ is veto power exercised by some countries?",options:["The World Health Organization","The Security Council","The General Assembly","The Secretariat"],correct:1},
+        {text:"A factor necessary for development of democratic institutions is",options:["Strong military forces","Respect for individual rights","One party system","An agricultural economy"],correct:1},
+        {text:"Bicameral Legislature means a Legislature",options:["With two CCTV cameras","With two chambers, Upper and Lower Houses","That can switch modes","That has two members from each State"],correct:1},
+        {text:"The first region created in post‑colonial Nigeria was",options:["Benue‑Plateau region","Cross River‑Ogoja region","Kwara‑Lokoja region","Mid‑Western region"],correct:3},
+        {text:"Nigeria's support for South‑South Cooperation is based on her desire to",options:["Assert leadership role in Africa","Promote non‑aligned policy","Promote economic understanding in the Third World","Promote military cooperation"],correct:2},
+        {text:"Nigeria participated in ECOMOG peacekeeping in",options:["Sierra Leone and Côte d'Ivoire","Liberia and Sierra Leone","Liberia and Guinea","Senegal and Côte d'Ivoire"],correct:1}
+      ],
+      economics: [
+        {text:"The fundamental problem of economics is",options:["Establishing political framework for production","Establishing equitable distribution of income","Scarcity of productive resources relative to unlimited wants","Finding determinants between supply and demand"],correct:2},
+        {text:"Economic problem occurs when",options:["There is scarcity relative to demand","There are no buyers for goods","Many people are out of work","All raw materials are imported"],correct:0},
+        {text:"Economic goods are termed scarce when they are",options:["Not available in sufficient quantities to satisfy effective demand","Not produced in sufficient quantities","Of high quality","Of primary importance"],correct:0},
+        {text:"Demand is price inelastic if",options:["Price elasticity is one","Price elasticity is less than one","Price elasticity is greater than one","Price elasticity is negative"],correct:1},
+        {text:"Unemployment from obsolete skill is",options:["Frictional unemployment","Structural unemployment","Cyclical unemployment","Seasonal unemployment"],correct:1},
+        {text:"An increase in real GDP causes demand for money to ______ and interest rate to ______.",options:["Increase; increase","Increase; decrease","Decrease; decrease","Decrease; increase"],correct:0},
+        {text:"Consumption based on household's long‑run estimate of income is the",options:["Relative income hypothesis","Duesenberry theory","Permanent income hypothesis","Life‑cycle hypothesis"],correct:2},
+        {text:"'Investment' in macroeconomics means",options:["Total amount of capital goods","Total money in bonds and stocks","Profit","Production of goods for immediate consumption"],correct:0},
+        {text:"The 'velocity' of money is",options:["Money supply multiplied by price level","Real money supply divided by real GDP","Ratio of real GDP to real money supply","Money supply divided by price level"],correct:2},
+        {text:"The theory of ______ was propounded by ______.",options:["Absolute advantage; David Ricardo","Absolute advantage; Adam Smith","Comparative advantage; Adam Smith","Comparative advantage; Mercantilists"],correct:1},
+        {text:"A ______ in the price of domestic currency is referred to as ______.",options:["Decrease, depreciation","Decrease, appreciation","Increase, depreciation","Increase, appreciation"],correct:0},
+        {text:"A major factor contributing to productivity is",options:["The labour force","The rate of GDP per year","The baby boom generation","Immigration of young workers"],correct:0},
+        {text:"One major problem facing West African countries is",options:["Relations with Colonial Masters","Political integration","Joint Military operations","Financial crunch of Member States"],correct:1},
+        {text:"Among determinants of economic growth, the most important is",options:["Land and Natural resources","Human capital","Technologies","Increased GDP"],correct:1},
+        {text:"The demand for money will fall if",options:["Real GDP rises","Real interest rates rise","GDP deflator rises","People expect deflation soon"],correct:1},
+        {text:"Example of expansionary monetary policy by CBN",options:["Increasing discount rate","Increasing reserve ratio","Buying Treasury securities from commercial banks","Lowering income taxes"],correct:2},
+        {text:"Part‑time workers who desire full‑time employment are",options:["Underemployed and contribute to unemployment statistic","Underemployed but do not contribute to statistic","Not part of labour force","Cyclical unemployment"],correct:0},
+        {text:"The highest body in ECOWAS organogram is",options:["Authority of Head of State and Government","Council of Ministers","Executive Secretariat","Parliament"],correct:0},
+        {text:"Money could be defined as",options:["Medium of exchange","Medium of payment","Settlement of debt","All of the above"],correct:3},
+        {text:"Economic agents in any economy include all EXCEPT",options:["Government","Household","Firm","Central Bank"],correct:3},
+        {text:"Which is NOT referring to the word economic?",options:["Is scarce","Is limited","Commands a price","Unlimited"],correct:3},
+        {text:"An increase in money income with constant price results in",options:["Inward parallel shift in budget line","Outward shift in budget line","Budget line remains constant","Options A and C"],correct:1},
+        {text:"Which is NOT concerned with macroeconomics?",options:["Aggregate level of outputs","General level of prices","Growth of real output","Price of a commodity"],correct:3},
+        {text:"The marginal propensity to consume is",options:["ΔC/ΔYd","Coefficient c in C = Ċ + cYd","The slope of the consumption function","All of the above"],correct:3},
+        {text:"An industry is",options:["A group of firms producing differentiated products","A group of firms producing distinct commodities","A group of firms producing related goods","A group of firms producing unrelated goods"],correct:2},
+        {text:"The principle that tax amount, timing and payment method should be known to taxpayer is",options:["Principle of convenience","Principle of economy","Principle of simplicity","Principle of certainty"],correct:3},
+        {text:"Public corporation is financed with",options:["Tax payer's money","Capital raised from shareholders","Capital contributed by owners","Capital raised from stock exchange"],correct:0},
+        {text:"J. M. Keynes is the strong advocate of",options:["Monetary policy","Income policy","Fiscal policy","All of the above"],correct:2},
+        {text:"If commodities X and Y are substitutes, their cross elasticity of demand will be",options:["Positive","Zero","One","Negative"],correct:0},
+        {text:"Example of a free good is",options:["Dinner you did not pay for","Your rented apartment","Free education","Water in the ocean"],correct:3},
+        {text:"Quantity demanded unchanged despite price changes is",options:["Inelastic","Perfectly inelastic","Infinitely elastic","Perfectly elastic"],correct:1},
+        {text:"A rise in naira per dollar from N157/$1 to N160/$1 means",options:["Naira has depreciated","Naira has appreciated","Naira has increased","Dollar has increased"],correct:0},
+        {text:"The short run is the period during which",options:["At least one input is fixed","All inputs are variable","All inputs are fixed","At least two inputs are fixed"],correct:0},
+        {text:"Real cost is",options:["Alternative commodities forgone","Cost of goods and services","Amount of money spent","True cost"],correct:0},
+        {text:"A tariff is a tax imposed on",options:["Imported goods","Exported goods","Domestic goods","Consumer goods"],correct:0},
+        {text:"Income elasticity of demand is responsiveness of",options:["Quantity demanded to change in price","Price to change in income","Quantity demanded to change in income","Price to change in quantity"],correct:2},
+        {text:"Developing economic hypothesis through intuition or logic is",options:["Induction","Deduction","Policy economics","Normative economics"],correct:1},
+        {text:"Microeconomics is the study of",options:["Output of the entire economy","Total workers employed in Nigeria","General price level","Output and price of wheat in Nigeria"],correct:3},
+        {text:"Business cycle is associated with",options:["Inflation","Recession","Unemployment","All of the above"],correct:3},
+        {text:"An 'innovator' is an entrepreneur who",options:["Makes basic policy decisions","Combines factors of production","Invents new product or process","Introduces new products or methods to market"],correct:3},
+        {text:"The two kinds of agents in circular flow model are",options:["Real and money markets","Real and traditional markets","Money and authorization markets","Product and factor markets"],correct:3},
+        {text:"The law of supply states that as price increases",options:["Supply increases","Supply decreases","Quantity supplied increases","Quantity supplied decreases"],correct:2},
+        {text:"A characteristic of competition is",options:["Widespread diffusion of economic power","Small number of buyers","Several sellers of all products","Difficult entry and exit"],correct:0},
+        {text:"If total economic cost is N750,000 and output sells for N1,000,000, the firm earns",options:["Normal profit of N750,000","Economic profit of N750,000","Economic profit of N250,000","Normal profit of N1,750,000"],correct:2},
+        {text:"The part of income after tax that is not consumed is",options:["Saving","Capital investment","Wages and salaries","Nondurable goods expenditure"],correct:0},
+        {text:"Government redistributes income through all EXCEPT",options:["Transfer earnings","Market intervention","Limited liability","Taxation"],correct:2},
+        {text:"One potential problem with the European Union is that",options:["Free flow of labour may reduce productivity","Economies of scale may increase consumer prices","Tariffs may reduce trade with non‑member nations","Government may have difficulty covering shortfall from duties"],correct:2},
+        {text:"One major criticism of foreign aid to developing countries is that it",options:["Provides incentives for capital flight","Is capital using rather than capital saving","Encourages growth in government bureaucracy","Gives too much power to the World Bank"],correct:2},
+        {text:"Consumer Price Index (CPI) is presently used in Nigeria to measure",options:["inflation","deflation","GDP growth","unemployment"],correct:0},
+        {text:"The World Trade Organization (WTO) is the leading trading nation body (answer as given)",options:["USA","China","Germany","UK"],correct:1}
+      ]
+    };
+
+    // Dynamic answer arrays
+    const answers = {
+      literature: new Array(banks.literature.length).fill(null),
+      government: new Array(banks.government.length).fill(null),
+      economics: new Array(banks.economics.length).fill(null)
+    };
+    const currentIdx = { literature:0, government:0, economics:0 };
+
+    // Progress update function
+    function updateProgress() {
+      let answered = 0;
+      Object.values(answers).forEach(arr => { answered += arr.filter(a => a !== null).length; });
+      const total = banks.literature.length + banks.government.length + banks.economics.length;
+      const percent = (answered / total) * 100;
+      const progressBar = document.getElementById('progressBar');
+      if (progressBar) progressBar.style.width = percent + '%';
+    }
+
+    function renderQuestion(subj){
+      const panel = document.getElementById(`panel-${subj}`);
+      if (!panel) { showError(`Panel panel-${subj} not found`); return; }
+      const qs = banks[subj];
+      const idx = currentIdx[subj];
+      const q = qs[idx];
+      if (!q) { showError(`Question ${idx} missing in ${subj}`); return; }
+      const sel = answers[subj][idx];
+      let html = `<div class="q-card"><div class="q-header"><span class="q-num">${idx+1}</span><span class="q-text">${q.text}</span></div><div class="options">`;
+      q.options.forEach((o,i)=>{
+        html += `<label class="opt"><input type="radio" name="${subj}_q" value="${i}" ${sel===i?'checked':''}> ${o}</label>`;
+      });
+      html += `</div><div class="nav-controls">
+        <button class="nav-btn" id="prev-${subj}" ${idx===0?'disabled':''}>◀ PREV</button>
+        <span class="q-indicator">${idx+1} of ${qs.length}</span>
+        <button class="nav-btn" id="next-${subj}" ${idx===qs.length-1?'disabled':''}>NEXT ▶</button>
+      </div></div>`;
+      panel.innerHTML = html;
+      panel.querySelectorAll(`input[name="${subj}_q"]`).forEach(r=> r.addEventListener('change', e=>{
+        answers[subj][idx]=parseInt(e.target.value);
+        updateProgress();
+      }));
+      document.getElementById(`prev-${subj}`)?.addEventListener('click',()=>{ if(idx>0){ currentIdx[subj]--; renderQuestion(subj); } });
+      document.getElementById(`next-${subj}`)?.addEventListener('click',()=>{ if(idx<qs.length-1){ currentIdx[subj]++; renderQuestion(subj); } });
+    }
+
+    function renderAll(){
+      try {
+        renderQuestion('literature');
+        renderQuestion('government');
+        renderQuestion('economics');
+        updateProgress();
+      } catch(e) { showError("Error rendering exam: "+e.message); }
+    }
+
+    // Tabs
+    document.querySelectorAll('.tab').forEach(tab=>{
+      tab.addEventListener('click',()=>{
+        const subj=tab.dataset.subject;
+        document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+        document.querySelectorAll('.subject-panel').forEach(p=>p.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(`panel-${subj}`).classList.add('active');
+        renderQuestion(subj);
+      });
+    });
+
+    // Calculator (safe eval)
+    const calcModal=document.getElementById('calcModal');
+    document.getElementById('openCalcBtn').addEventListener('click',()=>calcModal.style.display='flex');
+    document.getElementById('closeCalcBtn').addEventListener('click',()=>calcModal.style.display='none');
+    let calcStr='';
+    const calcDisp=document.getElementById('calcDisplay');
+    document.querySelectorAll('.calc-grid button:not(.clear):not(#closeCalcBtn)').forEach(b=>{
+      b.addEventListener('click',()=>{
+        const v=b.textContent;
+        if(v==='='){
+          try {
+            const result = Function('"use strict"; return (' + calcStr + ')')();
+            calcDisp.value = result;
+            calcStr = result.toString();
+          } catch(e){ calcDisp.value='Error'; calcStr=''; }
+        }
+        else if(['+','-','*','/'].includes(v)){ calcStr+=v; calcDisp.value=calcStr; }
+        else{ calcStr+=v; calcDisp.value=calcStr; }
+      });
+    });
+    document.querySelector('.calc-grid button.clear').addEventListener('click',()=>{ calcStr=''; calcDisp.value='0'; });
+
+    // Submit exam (with anti-duplicate)
+    const submitBtn = document.getElementById('submitBtn');
+    let submitting = false;
+    submitBtn.addEventListener('click',()=>{
+      if(submitting) return;
+      if(!userName||!userEmail) return alert('Enter details first');
+      submitting = true;
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Submitting...';
+
+      let total=0, passList=[], failList=[];
+      ['literature','government','economics'].forEach(subj=>{
+        let c=0;
+        banks[subj].forEach((q,i)=>{
+          const chosen=answers[subj][i];
+          const ok=(chosen===q.correct);
+          if(ok) c++;
+          const chosenLabel=chosen!==null?q.options[chosen]:'No answer';
+          const correctLabel=q.options[q.correct];
+          const entry = `${subj.toUpperCase()} Q${i+1}: ${q.text}<br>Your answer: ${chosenLabel} ${ok?'✅':'❌'}<br><b>Correct: ${correctLabel}</b>`;
+          if(ok) passList.push(entry); else failList.push(entry);
+        });
+        total+=c;
+      });
+      const totalQ = banks.literature.length + banks.government.length + banks.economics.length;
+      const pct = ((total/totalQ)*100).toFixed(1);
+      const grade = pct >= 70 ? "DISTINCTION" : pct >= 60 ? "MERIT" : pct >= 50 ? "PASS" : "FAIL";
+      document.getElementById('resultDisplay').style.display='block';
+      document.getElementById('resultDisplay').innerHTML = `
+        <h2>Exam Completed</h2>
+        <p>Candidate: <strong>${userName}</strong></p>
+        <p>Score: <strong>${total}/${totalQ}</strong></p>
+        <p>Percentage: <strong>${pct}%</strong></p>
+        <p>Grade: <strong>${grade}</strong></p>
+      `;
+
+      const templateParams = {
+        user_name: userName,
+        user_email: userEmail,
+        score: total,
+        total: totalQ,
+        percentage: pct,
+        time_left: formatTime(totalSeconds),
+        passed_list: passList.length ? passList.join('<br>') : 'None',
+        failed_list: failList.length ? failList.join('<br>') : 'None'
+      };
+
+      emailjs.send('service_mefiz1p', 'template_wuvc455', templateParams)
+        .then(() => {
+          alert('📧 Result emailed to examiner!');
+          localStorage.removeItem(STORAGE_KEY);
+          examSubmitted = true;
+          clearInterval(timerInterval);
+        })
+        .catch(err => {
+          alert('⚠️ Email error. Check console.');
+          showError('Email send failed: ' + (err.text || err.message));
+        })
+        .finally(() => {
+          submitBtn.disabled = false;
+          submitBtn.textContent = '✅ SUBMIT EXAM';
+          submitting = false;
+        });
+    });
+
+    // BEGIN EXAM button
+    startBtn.addEventListener('click',()=>{
+      const n=nameInp.value.trim(), e=emailInp.value.trim();
+      if(!n||!e) return alert('Enter both name and email');
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if(!emailRegex.test(e)){ alert('Please enter a valid email address'); return; }
+      userName=n; userEmail=e;
+      modal.style.display='none';
+      setTimeout(() => { renderAll(); }, 10);
+    });
+    modal.style.display='flex';
+  })();
+</script>
+</body>
+</html>    .modal-card{background:#fff;max-width:380px;width:90%;padding:28px 24px;border-radius:36px;box-shadow:0 30px 50px rgba(0,0,0,0.4);animation:modalPop 0.3s ease;}
     @keyframes modalPop{from{transform:scale(0.9);opacity:0;}to{transform:scale(1);opacity:1;}}
     .modal-card h2{margin-bottom:18px;color:#0f172a;font-size:1.4rem;font-weight:700;}
     .modal-input{width:100%;padding:16px 18px;margin-bottom:16px;border:2px solid #e2e8f0;border-radius:40px;font-size:1rem;outline:none;transition:0.2s;}
